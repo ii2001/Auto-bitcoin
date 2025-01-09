@@ -348,6 +348,9 @@ def ai_trading():
 
     # 6. YouTube 자막 데이터 가져오기
     youtube_transcript = get_combined_transcript("3XbtEX3jUv4")  # 여기에 실제 비트코인 관련 YouTube 영상 ID를 넣으세요
+    f = open("strategy.txt", "w", encoding="utf-8")
+    f.write(youtube_transcript)
+    f.close()
 
     # Selenium으로 차트 캡처
     driver = None
