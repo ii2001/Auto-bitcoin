@@ -6,7 +6,7 @@ import plotly.express as px
 
 # 데이터베이스 연결 함수
 def get_connection():
-    return sqlite3.connect('bitcoin_trades.db')
+    return sqlite3.connect('../data/bitcoin_trades.db')
 
 
 # 데이터 로드 함수
