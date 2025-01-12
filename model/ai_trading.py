@@ -42,7 +42,7 @@ def ai_trading(upbit, serpapi_key):
     news_headlines = get_bitcoin_news(serpapi_key)
 
     # 6. YouTube 자막 대신 strategy.txt 읽기
-    with open("../env/strategy.txt", "r", encoding="utf-8") as f:
+    with open("../strategy.txt", "r", encoding="utf-8") as f:
         youtube_transcript = f.read()
 
     # 7. Selenium으로 차트 캡처
