@@ -1,6 +1,6 @@
 import os
 import logging
-from data.db_manager import calculate_performance
+from db_manager import calculate_performance
 from openai import OpenAI
 
 GPT_MODEL = "o1-mini-2024-09-12"

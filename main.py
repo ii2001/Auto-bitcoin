@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import pyupbit
 
 from model.ai_trading import ai_trading
-from data.db_manager import init_db
+from db_manager import init_db
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)

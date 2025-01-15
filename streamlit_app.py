@@ -5,7 +5,7 @@ import plotly.express as px
 
 
 def get_connection():
-    return sqlite3.connect('../data/bitcoin_trades.db')
+    return sqlite3.connect('bitcoin_trades.db')
 
 
 def load_data():
