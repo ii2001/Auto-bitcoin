@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import pyupbit
 
 from model.ai_trading import ai_trading
-from model.db_manager import init_db
+from data.db_manager import init_db
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     schedule.every().day.at("21:00").do(main_job)
 
     # 테스트 용으로 즉시 한번 실행
-    # main_job()
+    main_job()
 
     while True:
         schedule.run_pending()

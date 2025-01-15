@@ -1,7 +1,9 @@
 import os
 import logging
-from model.db_manager import calculate_performance
+from data.db_manager import calculate_performance
 from openai import OpenAI
+
+GPT_MODEL = "o1-mini-2024-09-12"
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +19,10 @@ def generate_reflection(trades_df, current_market_data):
 
     # OpenAI ChatCompletion 호출
     response = client.chat.completions.create(
-        model="gpt-4o-2024-08-06",
+        model=GPT_MODEL,
         messages=[
             {
-                "role": "system",
+                "role": "user",
                 "content": "You are an AI trading assistant tasked with analyzing recent trading performance and current market conditions to generate insights and improvements for future trading decisions."
             },
             {

@@ -5,14 +5,16 @@ import logging
 import pyupbit
 
 from openai import OpenAI
-from data_fetcher import (
+from model.data_fetcher import (
     get_upbit_balances, get_ohlcv_df, add_indicators,
     get_fear_and_greed_index, get_bitcoin_news,
     create_driver, perform_chart_actions, capture_and_encode_screenshot
 )
-from db_manager import get_recent_trades, log_trade, init_db
-from reflection import generate_reflection
-from analysis import TradingDecision
+from data.db_manager import get_recent_trades, log_trade, init_db
+from model.reflection import generate_reflection
+from model.analysis import TradingDecision
+
+GPT_MODEL = "o1-mini-2024-09-12"
 
 logger = logging.getLogger(__name__)
 
@@ -42,24 +44,8 @@ def ai_trading(upbit, serpapi_key):
     news_headlines = get_bitcoin_news(serpapi_key)
 
     # 6. YouTube 자막 대신 strategy.txt 읽기
-    with open("../strategy.txt", "r", encoding="utf-8") as f:
+    with open("strategy.txt", "r", encoding="utf-8") as f:
         youtube_transcript = f.read()
-
-    # 7. Selenium으로 차트 캡처
-    driver = None
-    chart_image = None
-    try:
-        driver = create_driver()
-        driver.get("https://upbit.com/full_chart?code=CRIX.UPBIT.KRW-BTC")
-        logger.info("페이지 로드 완료")
-        time.sleep(30)  # 페이지 로딩 대기 시간
-        perform_chart_actions(driver)
-        chart_image = capture_and_encode_screenshot(driver)
-    except Exception as e:
-        logger.error(f"차트 캡처 중 오류 발생: {e}")
-    finally:
-        if driver:
-            driver.quit()
 
     # DB 연결
     conn = init_db()
@@ -85,10 +71,10 @@ def ai_trading(upbit, serpapi_key):
 
     # AI에게 판단 요청
     response = client.chat.completions.create(
-        model="gpt-4o-2024-08-06",
+        model=GPT_MODEL,
         messages=[
             {
-                "role": "system",
+                "role": "user",
                 "content": f"""
                 You are an expert in Bitcoin investing. Analyze the provided data and determine whether to buy, sell, or hold at the current moment.
                 Consider the following in your analysis:
@@ -109,7 +95,11 @@ def ai_trading(upbit, serpapi_key):
                 1. decision (buy / sell / hold)
                 2. percentage (1-100 if buy/sell, 0 if hold)
                 3. reason
+                
+                Return only valid JSON with no markdown formatting or triple backticks.
+  Do not include any additional text or explanation outside of the JSON.
                 """
+
             },
             {
                 "role": "user",
@@ -123,33 +113,9 @@ Hourly OHLCV with indicators (24 hours): {df_hourly.to_json()}
 Recent news headlines: {json.dumps(news_headlines)}
 Fear and Greed Index: {json.dumps(fear_greed_index)}"""
                     },
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/png;base64,{chart_image}"
-                        }
-                    }
                 ]
             }
         ],
-        response_format={
-            "type": "json_schema",
-            "json_schema": {
-                "name": "trading_decision",
-                "strict": True,
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "decision": {"type": "string", "enum": ["buy", "sell", "hold"]},
-                        "percentage": {"type": "integer"},
-                        "reason": {"type": "string"}
-                    },
-                    "required": ["decision", "percentage", "reason"],
-                    "additionalProperties": False
-                }
-            }
-        },
-        max_tokens=4095
     )
 
     # 결과 파싱
